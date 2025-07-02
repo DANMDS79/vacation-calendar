@@ -179,6 +179,7 @@ function App() {
                 onUpdateEmployee={updateEmployee}
                 onDeleteEmployee={deleteEmployee}
                 onCreateVacation={createVacation}
+                onDeleteVacation={deleteVacation}
                 user={user}
               />
             </TabsContent>
@@ -197,7 +198,7 @@ function App() {
           <TabsContent value="conflicts">
             <ConflictDetection 
               managements={managements}
-              coordinations={coordinations}
+              coordinations={coordenations}
               employees={employees}
               vacations={vacations}
               user={user}
