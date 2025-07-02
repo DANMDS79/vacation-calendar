@@ -253,15 +253,17 @@ function EmployeeManagement({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="department">Departamento</Label>
-                    <Select value={newEmployee.department} onValueChange={(value) => setNewEmployee({...newEmployee, department: value})}>
+                    <Label htmlFor="gerencia">Gerência</Label>
+                    <Select value={newEmployee.gerencia_id} onValueChange={(value) => setNewEmployee({...newEmployee, gerencia_id: value, coordenacao_id: ''})}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione o departamento" />
+                        <SelectValue placeholder="Selecione a gerência" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Gerencia de Controladoria">Gerencia de Controladoria</SelectItem>
-                        <SelectItem value="Gerencia Financeira">Gerencia Financeira</SelectItem>
-                        <SelectItem value="Diretoria Financeira">Diretoria Financeira</SelectItem>
+                        {managements.map(management => (
+                          <SelectItem key={management.id} value={management.id.toString()}>
+                            {management.nome}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
