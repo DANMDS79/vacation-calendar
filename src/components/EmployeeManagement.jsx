@@ -19,7 +19,9 @@ function EmployeeManagement({
   onUpdateEmployee, 
   onDeleteEmployee, 
   onCreateVacation, 
-  user 
+  onDeleteVacation, 
+  user, 
+  refetchEmployees 
 }) {
   const [createdUserInfo, setCreatedUserInfo] = useState(null)
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false)
@@ -152,6 +154,18 @@ function EmployeeManagement({
 
   const handleAddVacation = async () => {
     if (newVacation.employee_id && newVacation.data_inicio && newVacation.data_fim) {
+      // Validação do período aquisitivo no frontend
+      const employee = employees.find(emp => emp.id === parseInt(newVacation.employee_id))
+      if (employee && employee.data_admissao) {
+        const dataAdmissao = new Date(employee.data_admissao)
+        const dataInicio = new Date(newVacation.data_inicio)
+        const periodoAquisitivo = new Date(dataAdmissao)
+        periodoAquisitivo.setFullYear(periodoAquisitivo.getFullYear() + 1)
+        if (dataInicio < periodoAquisitivo) {
+          alert(`Funcionário só pode solicitar férias a partir de ${periodoAquisitivo.toLocaleDateString()} (12 meses após admissão).`)
+          return
+        }
+      }
       try {
         const vacationData = {
           ...newVacation,
@@ -197,7 +211,12 @@ function EmployeeManagement({
           <h2 className="text-2xl font-bold">Gestão de Funcionários</h2>
           <p className="text-muted-foreground">Gerencie funcionários e suas férias</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {isAdmin && refetchEmployees && (
+            <Button variant="outline" onClick={refetchEmployees} title="Atualizar lista de funcionários">
+              Atualizar lista
+            </Button>
+          )}
           {isAdmin && (
             <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
               <DialogTrigger asChild>

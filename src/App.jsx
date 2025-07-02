@@ -74,7 +74,7 @@ function App() {
   // Usar hooks da API
   const { managements, loading: managementsLoading } = useManagements()
   const { coordinations, loading: coordinationsLoading } = useCoordinations()
-  const { employees, loading: employeesLoading, createEmployee, updateEmployee, deleteEmployee } = useEmployees()
+  const { employees, loading: employeesLoading, createEmployee, updateEmployee, deleteEmployee, refetch } = useEmployees()
   const { vacations, loading: vacationsLoading, createVacation, updateVacation, deleteVacation } = useVacations()
 
   const totalEmployees = employees.length
@@ -181,6 +181,7 @@ function App() {
                 onCreateVacation={createVacation}
                 onDeleteVacation={deleteVacation}
                 user={user}
+                refetchEmployees={refetch}
               />
             </TabsContent>
           )}
