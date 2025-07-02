@@ -7,6 +7,23 @@ import EmployeeManagement from './components/EmployeeManagement.jsx'
 import VacationCalendar from './components/VacationCalendar.jsx'
 import ConflictDetection from './components/ConflictDetection.jsx'
 import Dashboard from './components/Dashboard.jsx'
+import Approval from './components/Approval.jsx'
+  // Funções para aprovar/rejeitar férias
+  const handleApproveVacation = async (vacationId) => {
+    await fetch(`${import.meta.env.VITE_API_URL}/vacations/${vacationId}/approve`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    // Atualiza lista após ação
+    await updateVacation(vacationId, {})
+  }
+  const handleRejectVacation = async (vacationId) => {
+    await fetch(`${import.meta.env.VITE_API_URL}/vacations/${vacationId}/reject`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    await updateVacation(vacationId, {})
+  }
 import { useManagements, useCoordinations, useEmployees, useVacations } from './hooks/useApi.js'
 import './App.css'
 
@@ -115,7 +132,7 @@ function App() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <BarChart3 className="h-4 w-4" />
               <span>Dashboard</span>
@@ -134,12 +151,17 @@ function App() {
               <AlertTriangle className="h-4 w-4" />
               <span>Conflitos</span>
             </TabsTrigger>
+            {user.role === 'aprovador' && (
+              <TabsTrigger value="approval" className="flex items-center space-x-2">
+                <span> Aprovação </span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="dashboard">
             <Dashboard 
               managements={managements}
-              coordinations={coordenations}
+              coordinations={coordinations}
               employees={employees}
               vacations={vacations}
               user={user}
@@ -150,7 +172,7 @@ function App() {
             <TabsContent value="employees">
               <EmployeeManagement 
                 managements={managements}
-                coordinations={coordenations}
+                coordinations={coordinations}
                 employees={employees}
                 vacations={vacations}
                 onCreateEmployee={createEmployee}
@@ -165,7 +187,7 @@ function App() {
           <TabsContent value="calendar">
             <VacationCalendar 
               managements={managements}
-              coordinations={coordenations}
+              coordinations={coordinations}
               employees={employees}
               vacations={vacations}
               user={user}
@@ -175,12 +197,24 @@ function App() {
           <TabsContent value="conflicts">
             <ConflictDetection 
               managements={managements}
-              coordinations={coordenations}
+              coordinations={coordinations}
               employees={employees}
               vacations={vacations}
               user={user}
             />
           </TabsContent>
+
+          {user.role === 'aprovador' && (
+            <TabsContent value="approval">
+              <Approval 
+                vacations={vacations}
+                employees={employees}
+                user={user}
+                onApprove={handleApproveVacation}
+                onReject={handleRejectVacation}
+              />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
     </div>

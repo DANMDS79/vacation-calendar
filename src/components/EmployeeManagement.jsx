@@ -21,6 +21,7 @@ function EmployeeManagement({
   onCreateVacation, 
   user 
 }) {
+  const [createdUserInfo, setCreatedUserInfo] = useState(null)
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false)
   const [isEditEmployeeOpen, setIsEditEmployeeOpen] = useState(false)
   const [isAddVacationOpen, setIsAddVacationOpen] = useState(false)
@@ -31,7 +32,12 @@ function EmployeeManagement({
     gerencia_id: '',
     coordenacao_id: '',
     cargo: '',
-    data_admissao: ''
+    data_admissao: '',
+    role: 'funcionario',
+    department: '',
+    username: '',
+    email: '',
+    password: ''
   })
   const [newVacation, setNewVacation] = useState({
     employee_id: '',
@@ -62,20 +68,33 @@ function EmployeeManagement({
   }
 
   const handleAddEmployee = async () => {
-    if (newEmployee.nome && newEmployee.gerencia_id && newEmployee.coordenacao_id) {
+    if (newEmployee.nome && newEmployee.gerencia_id && newEmployee.coordenacao_id && newEmployee.role && newEmployee.department && newEmployee.username && newEmployee.email && newEmployee.password) {
       try {
         const employeeData = {
           ...newEmployee,
           gerencia_id: parseInt(newEmployee.gerencia_id),
           coordenacao_id: parseInt(newEmployee.coordenacao_id)
         }
-        await onCreateEmployee(employeeData)
+        const result = await onCreateEmployee(employeeData)
+        // Se o backend retornar info do usuário criado, exiba para o admin
+        if (result && result.user && result.senha_padrao) {
+          setCreatedUserInfo({
+            username: result.user.username,
+            email: result.user.email,
+            senha: result.senha_padrao
+          })
+        }
         setNewEmployee({
           nome: '',
           gerencia_id: '',
           coordenacao_id: '',
           cargo: '',
-          data_admissao: ''
+          data_admissao: '',
+          role: 'funcionario',
+          department: '',
+          username: '',
+          email: '',
+          password: ''
         })
         setIsAddEmployeeOpen(false)
       } catch (error) {
@@ -112,12 +131,22 @@ function EmployeeManagement({
     }
   }
 
+
   const handleDeleteEmployee = async (employeeId) => {
     try {
       await onDeleteEmployee(employeeId)
     } catch (error) {
       console.error('Erro ao excluir funcionário:', error)
       alert('Erro ao excluir funcionário. Tente novamente.')
+    }
+  }
+
+  const handleDeleteVacation = async (vacationId) => {
+    try {
+      await onDeleteVacation(vacationId)
+    } catch (error) {
+      console.error('Erro ao excluir férias:', error)
+      alert('Erro ao excluir férias. Tente novamente.')
     }
   }
 
@@ -154,6 +183,15 @@ function EmployeeManagement({
 
   return (
     <div className="space-y-6">
+      {createdUserInfo && (
+        <div className="bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded mb-4">
+          <strong>Usuário criado!</strong><br />
+          <span>Usuário: <b>{createdUserInfo.username}</b></span><br />
+          <span>Email: <b>{createdUserInfo.email}</b></span><br />
+          <span>Senha inicial: <b>{createdUserInfo.senha}</b></span><br />
+          <button className="mt-2 text-blue-600 underline" onClick={() => setCreatedUserInfo(null)}>Fechar</button>
+        </div>
+      )}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Gestão de Funcionários</h2>
@@ -186,17 +224,56 @@ function EmployeeManagement({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="gerencia">Gerência</Label>
-                    <Select value={newEmployee.gerencia_id} onValueChange={(value) => setNewEmployee({...newEmployee, gerencia_id: value, coordenacao_id: ''})}>
+                    <Label htmlFor="username">Usuário (login)</Label>
+                    <Input
+                      id="username"
+                      value={newEmployee.username}
+                      onChange={(e) => setNewEmployee({...newEmployee, username: e.target.value})}
+                      placeholder="Usuário para login"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="email">E-mail</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={newEmployee.email}
+                      onChange={(e) => setNewEmployee({...newEmployee, email: e.target.value})}
+                      placeholder="E-mail do usuário"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="password">Senha inicial</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={newEmployee.password}
+                      onChange={(e) => setNewEmployee({...newEmployee, password: e.target.value})}
+                      placeholder="Senha inicial para o usuário"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="department">Departamento</Label>
+                    <Select value={newEmployee.department} onValueChange={(value) => setNewEmployee({...newEmployee, department: value})}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione a gerência" />
+                        <SelectValue placeholder="Selecione o departamento" />
                       </SelectTrigger>
                       <SelectContent>
-                        {managements.map(management => (
-                          <SelectItem key={management.id} value={management.id.toString()}>
-                            {management.nome}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="Gerencia de Controladoria">Gerencia de Controladoria</SelectItem>
+                        <SelectItem value="Gerencia Financeira">Gerencia Financeira</SelectItem>
+                        <SelectItem value="Diretoria Financeira">Diretoria Financeira</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="role">Grupo de Usuário</Label>
+                    <Select value={newEmployee.role} onValueChange={(value) => setNewEmployee({...newEmployee, role: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o grupo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="aprovador">Aprovador</SelectItem>
+                        <SelectItem value="funcionario">Funcionário</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -562,7 +639,7 @@ function EmployeeManagement({
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeleteEmployee(vacation.id)}>
+                            <AlertDialogAction onClick={() => handleDeleteVacation(vacation.id)}>
                               Excluir
                             </AlertDialogAction>
                           </AlertDialogFooter>
