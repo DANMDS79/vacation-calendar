@@ -199,7 +199,7 @@ function App() {
           <TabsContent value="conflicts">
             <ConflictDetection 
               managements={managements}
-              coordinations={coordinations}
+              coordinations={coordenations}
               employees={employees}
               vacations={vacations}
               user={user}
@@ -224,4 +224,3 @@ function App() {
 }
 
 export default App
-
